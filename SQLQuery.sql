@@ -67,6 +67,7 @@ trip_ID int not null foreign key REFERENCES  Trip(trip_ID),
 user_ID int  not null foreign key REFERENCES  Person(user_ID),
 )
 
+
 --Create Station table
 create table Station (
 station_ID int unique identity(1,1),
