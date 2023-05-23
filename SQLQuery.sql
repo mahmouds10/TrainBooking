@@ -1,8 +1,10 @@
 --Create the Database
 create database TrainBooking;
 
+
 --Use the Database
 use TrainBooking;
+
 
 --Create Person Table
 create table Person (
@@ -14,17 +16,15 @@ pass varchar(50) not null cHECK (Pass LIKE '%[A-Z]%' AND pass LIKE '%[a-z]%' AND
 user_type varchar(50) not null CHECK (UPPER(user_type) IN ('CUSTOMER', 'ADMIN'))
 )
 
+
 --Creat train Table
 create table train(
 train_ID int not null identity(1,1) primary key,
 train_name varchar (50) not null ,
 departure_station varchar (50) not null,
-departure_date date not null,
-departure_time time not null,
 arrival_station varchar (50) not null,
-arrival_date date not null,
-arrival_time time not null,
 )
+
 
 --Create Trip table
 create table Trip (
@@ -39,10 +39,26 @@ arrival_time time not null ,
 max_capacity int not null ,
 available_seats int not null ,
 )
-
 --Updates on Trip table 
 alter table Trip 
 add constraint  chk_seats CHECK (available_seats <= max_capacity) ; --"Add constraint"
+
+alter table Trip
+add available_rooms int not null ; --"Add attribute"
+
+ALTER TABLE Trip
+ADD CONSTRAINT departure_station_FK FOREIGN KEY (departure_station)
+REFERENCES Station(station_name);
+
+ALTER TABLE Trip
+ADD CONSTRAINT arrival_station_FK FOREIGN KEY (arrival_station)
+REFERENCES Station(station_name);
+
+ALTER TABLE Trip
+ADD CONSTRAINT check_departure_st CHECK (departure_station IN (SELECT station_name FROM Station));
+
+ALTER TABLE Trip
+ADD CONSTRAINT check_arrival_st CHECK (arrival_station IN (SELECT station_name FROM Station));
 
 --Create Booking table 
 create table Booking (
@@ -50,6 +66,14 @@ booking_ID int primary key identity(1,1) ,
 trip_ID int not null foreign key REFERENCES  Trip(trip_ID),
 user_ID int  not null foreign key REFERENCES  Person(user_ID),
 )
+
+--Create Station table
+create table Station (
+station_ID int unique identity(1,1),
+station_name varchar (50) primary key ,
+country varchar (50) not null
+)
+
 
 --Updates on Booking table
 ALTER TABLE Booking drop COLUMN num_of_booked_seats;                                --Drop unnecessary column
@@ -62,6 +86,8 @@ select * from Person;   --View all data in Person table
 select * from train;    --View all data in Person table
 select * from Trip;     --View all data in Person table
 select * from Booking;  --View all data in Booking table
+select * from Station;  --View all data in Station table
+
 
 --Update Identity statements
 DBCC CHECKIDENT('Person', RESEED, 1);  --Make user_ID = 1
@@ -69,8 +95,11 @@ DBCC CHECKIDENT('train', RESEED, 1);   --Make train_ID = 1
 DBCC CHECKIDENT('Trip', RESEED, 1);    --Make trip_ID = 1
 DBCC CHECKIDENT('Booking', RESEED, 1); --Make booking_ID =1
 
---Queries used in the C# code
-Data Source=MAHMOUD;Initial Catalog=TrainBooking;Integrated Security=True; --Connection statement
+
+--------------------------Queries used in the C# code--------------------------
+
+--Connection statement
+Data Source=MAHMOUD;Initial Catalog=TrainBooking;Integrated Security=True; 
 
 
 --Login
@@ -84,13 +113,13 @@ VALUES ('@Value1', '@Value2', '@Value3' , '@Value4' , '@Value5');
 
 ------------------------------Admin Section------------------------------
 
-
 --View trains and related trips 
 SELECT t.*, COALESCE(tr.Trip_ID, null) AS trip_ID FROM train t 
 LEFT JOIN Trip tr ON t.train_ID = tr.train_ID; 
 
 
-Select * from Trip; --View all trips 
+--View all trips 
+Select * from Trip; 
 
 
 --Add new trai 
